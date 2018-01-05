@@ -4,11 +4,74 @@
     <meta charset="UTF-8">
     <link type="text/css" rel="stylesheet" href="trasovac.css">
     <script src="trasovac.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+
+    <!-- kreslení grafů -->
+    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+    <script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyCeFavQlirjJ7azfWk1p5WiQh41f-cl-io" async></script>
+
+    <!-- (http://www.geocodezip.com/scripts/v3_epoly.js) 
+    zjišťování polohy
+    <script type="text/javascript" src="v3_epoly.js"></script>-->
+
+
+    <!-- Načtení knihovny pro vizualizaci grafu -->
+    <script type="text/javascript">
+        // Load the Visualization API and the piechart package.
+        google.load("visualization", "1", {
+            packages: ["columnchart"]
+        });
+
+        // Set a callback to run when the Google Visualization API is loaded.
+        // až teď spustím aplikaci (načtu mapu - byl konflikt mezi načtením vizualizace pro graf a mapy)
+        google.setOnLoadCallback(initApp);
+    </script>
+
+
     <title>Trasovač</title>
 
 </head>
 
 <body>
+
+    <div class="title">Trasovač</div>
+    <div id="sidebar">
+
+        <div class="section">
+            <div>Nahrát GPX soubor</div>
+        </div>
+        <!-- <div id="sidebarContent" class="section">
+
+            <div id="gpxDiv">
+                <button class="btn btn-orange" id="gpxButton" type="file">Upload GPX File</button>
+            </div>
+
+            <div id="orDiv">
+                or
+            </div>
+            <div class="area" id="drag_area">
+                <div id="drop_zone">Drop files here</div>
+                <div id="drop_zone_error">Only GPX files expected..</div>
+            </div>
+            <div id="orDiv">
+                or
+            </div>
+            <div id="selectDiv">
+                Copy and Paste a GPX URL
+            </div>
+            <div>
+                <input id="urlInput" name="url_id" type="text" placeholder="write a gpx url here" value="">
+            </div>
+        </div>-->
+
+    </div>
+
+    <div id="mapholder">
+        <div id="map"></div>
+
+        <!--<div id="chart_div"></div>
+        <div id="divDistance">Vzdálenost: <span id="distance"></span></div>-->
+    </div>
 
 
 </body>
