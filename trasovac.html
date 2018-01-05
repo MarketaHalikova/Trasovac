@@ -25,6 +25,7 @@
         // Set a callback to run when the Google Visualization API is loaded.
         // až teď spustím aplikaci (načtu mapu - byl konflikt mezi načtením vizualizace pro graf a mapy)
         google.setOnLoadCallback(initApp);
+
     </script>
 
 
@@ -40,29 +41,23 @@
         <div class="section">
             <div>Nahrát GPX soubor</div>
         </div>
-        <!-- <div id="sidebarContent" class="section">
+        <div id="sidebarContent" class="section">
 
             <div id="gpxDiv">
-                <button class="btn btn-orange" id="gpxButton" type="file">Upload GPX File</button>
+                <button class="btn-orange" id="gpxButton" type="file">Vybrat soubor GPX</button>
             </div>
 
             <div id="orDiv">
-                or
+                nebo
             </div>
             <div class="area" id="drag_area">
-                <div id="drop_zone">Drop files here</div>
-                <div id="drop_zone_error">Only GPX files expected..</div>
+                <div id="drop_zone">Přetáhni soubory sem</div>
+                <!--<div id="drop_zone_error">Only GPX files expected..</div>-->
             </div>
-            <div id="orDiv">
-                or
+            <div id="urlDiv">
+                <button class="btn-orange" id="clear" type="file">Smazat trasy</button>
             </div>
-            <div id="selectDiv">
-                Copy and Paste a GPX URL
-            </div>
-            <div>
-                <input id="urlInput" name="url_id" type="text" placeholder="write a gpx url here" value="">
-            </div>
-        </div>-->
+        </div>
 
     </div>
 
