@@ -23,6 +23,17 @@ var MapController = (function () {
     var currentLongitude = MapConstants.DEFAULT_LONGITUDE;
     var elevationService = null;
     var chart = null;
+    var mousemarker = null;
+
+
+    // Remove the green rollover marker when the mouse leaves the chart
+    function clearMouseMarker() {
+        if (mousemarker != null) {
+            mousemarker.setMap(null);
+            mousemarker = null;
+        }
+    }
+
 
     /*
     show elevation chart for first track. Callback method is  plotElevation
@@ -88,17 +99,17 @@ var MapController = (function () {
 
         // listener k zobrazeni zeleneho bodu na mape, pokud se prejizdi mysi po profilu
 
-        // google.visualization.events.addListener(chart, 'onmouseover', function (e) {
-        //  if (mousemarker == null) {
-        //   mousemarker = new google.maps.Marker({
-        //   position: elevations[e.row].location,
-        //   map: map,
-        //   icon: "http://maps.google.com/mapfiles/ms/icons/green-dot.png"
-        //  });
-        //  } else {
-        //  mousemarker.setPosition(elevations[e.row].location);
-        // }
-        // });
+        google.visualization.events.addListener(chart, 'onmouseover', function (e) {
+            if (mousemarker == null) {
+                mousemarker = new google.maps.Marker({
+                    position: elevations[e.row].location,
+                    map: map,
+                    icon: "http://maps.google.com/mapfiles/ms/icons/green-dot.png"
+                });
+            } else {
+                mousemarker.setPosition(elevations[e.row].location);
+            }
+        });
 
     }
 
