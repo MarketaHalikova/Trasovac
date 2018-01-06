@@ -106,7 +106,22 @@ var UIController = (function () {
             }
             return files;
         },
+
+
+        showDragError: function (message) {
+            var element;
+            element = document.getElementById('drop_zone_error');
+            element.innerHTML = message;
+            // Add the "show" class to DIV
+            element.className = "show";
+
+            setTimeout(function () {
+                element.className = element.className.replace("show", "");
+            }, 3000);
+        },
     }
+
+
 
 })();
 
@@ -181,7 +196,7 @@ var DataController = (function () {
   ---------------------- MainController ------------------
   --------------------------------------------------------
 */
-var MainController = (function (mapCtrl, uICtrl, dataCtrl) {
+var MainController = (function (mapCtrl, UICtrl, dataCtrl) {
 
 
     var setupEventListeners = function () {
@@ -191,11 +206,10 @@ var MainController = (function (mapCtrl, uICtrl, dataCtrl) {
     };
 
     var buttonFilesClick = function (evt) {
-        var selectedFiles = uICtrl.selectFiles(evt);
-        dataCtrl.parseFiles(selectedFiles);
-        //if (dataCtrl.parseFiles(files, showOnMap) === 0) {
-        //     UICtrl.showDragError('No gpx file selected...');
-        // }
+        var selectedFiles = UICtrl.selectFiles(evt);
+        if (dataCtrl.parseFiles(files) === 0) {
+            UICtrl.showDragError('No gpx file selected...');
+        }
     }
 
     /*
