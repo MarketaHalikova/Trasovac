@@ -1,0 +1,50 @@
+
+v html nejprve naètu vizualizaci pro graf, 
+poté je google API loaded, zavolám aplikaci initAPP
+
+initApp  zavolá metodu init v MainControlleru a preda mu google
+
+(zavola metodu na nastaveni listeneru)
+zavola metodu init v mapControlleru
+
+ve funkci init nejprve zavolam funkci findposition
+
+ve findposition zjistim aktualni polohu a ulozim do promennych
+pokud ne, dam tam defaultni hodnoty
+
+dale se ve funkci init vykresli mapa do elementu 'map'
+
+
+
+v html na buttonu v gpxDiv se na kliknuti spusti input
+
+v js v mainControlleru tento element sleduje listener a ceka na zmenu,
+kdyz zmena probehne zavola fci buttonFilesClick
+
+ta dostala jako paramatr ten event co se stalo a zavola fci selectFiles v ui
+
+select files vybere cilove soubory a vlozi je do pole souboru, ktere vraci
+
+ty se v metode buttonfilesclick ulozily do selected files
+a s temi se (pokud nejaky jsou) zavola metoda parseFiles v dataControlleru
+
+ta metoda dale potrebuje jen gpx, takze zavola filter gpxFiles - ta vraci jenom pole gpx
+pokud v nem nejake jsou, tak s nimi postupne vola metodu readGpxFiles
+
+ta je readrem nacte a pomoci jQuery najde elementy a ta to do xmldata
+vytvorime jeden prazdny gpx a pak pro kazdy track v xml zavolame readtrack
+
+ta rozdeli vse do promenych a prida do gpx
+
+pak zas zpet v read gpxfiles vypocteme metodou calculateBounds okraje pro zobrazeni a 
+callbackem se zavola funkce show on map
+
+ta nejdrive zavola center a zoom map a pak showtrack pro kazdy
+ta je prevzata
+
+
+
+
+
+
+callback funkce - na konci procesu se zavola vybrana funkce
