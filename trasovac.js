@@ -98,6 +98,14 @@ var UIController = (function () {
     */
     return {
 
+        selectFiles: function (evt) {
+            var element = evt.target;
+            files = [];
+            for (var i = 0; i < element.files.length; i++) {
+                files.push(element.files[i]);
+            }
+            return files;
+        },
     }
 
 })();
@@ -111,11 +119,58 @@ var UIController = (function () {
 var DataController = (function () {
 
 
+    var filterGpxFiles = function (files) {
+        var gpxFiles = [];
+        for (var i = 0; i < files.length; i++) {
+            if (files[i].name.split('.').pop().toLowerCase() === 'gpx') {
+                gpxFiles.push(files[i]);
+            }
+        }
+        return gpxFiles;
+    };
+
+    var readGpxFiles = function (file) {
+        var reader,
+            reader = new FileReader();
+        reader.readAsText(file);
+        // callback function is called when the file is readed
+        reader.onloadend = function () {
+            var xmlData, tracks, track, name;
+            xmlData = $(reader.result);
+            name = $(xmlData).find("metadata").find('name').text();
+            if (!name) {
+                name = file.name;
+            }
+        };
+    };
+
     /*
     --------------------- Return part ---------------------
     */
     return {
 
+
+
+
+        parseFiles: function (files) {
+            var gpxFiles;
+            // 1. filter only gpx files 
+            gpxFiles = filterGpxFiles(files);
+
+            if (gpxFiles.length > 0) {
+
+                // Checks whether the browser supports HTML5  
+                if (typeof (FileReader) != "undefined") {
+                    // 5. read GPX files as XML
+                    for (var i = 0; i < gpxFiles.length; i++) {
+                        readGpxFiles(files[i]);
+                    }
+                } else {
+                    alert("Sorry! Your browser does not support HTML5!");
+                }
+            }
+            return gpxFiles.length;
+        },
     }
 
 })();
@@ -129,11 +184,28 @@ var DataController = (function () {
 var MainController = (function (mapCtrl, uICtrl, dataCtrl) {
 
 
+    var setupEventListeners = function () {
+
+        document.getElementById("gpxFile").addEventListener("change", buttonFilesClick, false);
+
+    };
+
+    var buttonFilesClick = function (evt) {
+        var selectedFiles = uICtrl.selectFiles(evt);
+        dataCtrl.parseFiles(selectedFiles);
+        //if (dataCtrl.parseFiles(files, showOnMap) === 0) {
+        //     UICtrl.showDragError('No gpx file selected...');
+        // }
+    }
+
     /*
     --------------------- Return part ---------------------
     */
+
+
     return {
         init: function (google) {
+            setupEventListeners();
             mapCtrl.init(google);
 
         }
