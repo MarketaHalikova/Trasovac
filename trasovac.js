@@ -133,6 +133,52 @@ var UIController = (function () {
 */
 var DataController = (function () {
 
+    var data = {
+        gpxs: [],
+    }
+
+    // Gpx file can contain more tracks 
+    var Gpx = function (id, name, filename) {
+        this.id = id;
+        this.name = name;
+        this.filename = filename;
+        this.tracks = new Array();
+    };
+
+    Gpx.prototype.addTrack = function (track) {
+        this.tracks.push(track);
+    };
+
+
+    // track with points
+    var Track = function (id, name, color) {
+        this.id = id;
+        this.name = name;
+        this.color = color;
+        this.points = new Array();
+        this.latlngArray = [];
+        this.polyline = null;
+        this.isPloted = false;
+    };
+
+    // point with latitude and longitude
+    var Point = function (lat, long) {
+        this.lat = lat;
+        this.long = long;
+    };
+
+    Track.prototype.addPoint = function (point) {
+        this.points.push(point);
+    };
+
+    var getTrackCount = function () {
+        var counter = 0;
+        for (var i = 0; i < data.gpxs.length; i++) {
+            counter += data.gpxs[i].tracks.length;
+        }
+        return counter;
+    }
+
 
     var filterGpxFiles = function (files) {
         var gpxFiles = [];
