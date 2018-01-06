@@ -25,6 +25,7 @@ vycentrovat mapu
     var centerMap = function () {
         map.setCenter(new google.maps.LatLng(parseFloat(currentLatitude), parseFloat(currentLongitude)));
     };
+
     // zjistit aktuální pozici
     // nepůjde pokud nebudu na https
     var findPosition = function () {
@@ -78,7 +79,6 @@ vycentrovat mapu
             };
             map = new google.maps.Map(mapElement, mapOptions);
 
-            centerMap();
         }
     }
 
@@ -138,6 +138,7 @@ var DataController = (function () {
     }
 
     // Gpx file can contain more tracks 
+
     var Gpx = function (id, name, filename) {
         this.id = id;
         this.name = name;
@@ -190,6 +191,34 @@ var DataController = (function () {
         return gpxFiles;
     };
 
+    var readTrack = function (xmlTrack, gpx) {
+        var name, id, color, track, xmlPoints;
+
+        name = $(xmlTrack).find("name").text();
+        id = getTrackCount();
+        if (!name) {
+            name = 'track' + (id + 1);
+        }
+
+        // track color from gsx file
+        color = $(xmlTrack).find("color").text();
+        track = new Track(id, name, color);
+
+        var xmlPoints = $(xmlTrack).find("trkpt");
+        for (var i = 0; i < xmlPoints.length; i++) {
+            // have to be wrapped by $() to use attr fuction of jquery
+            var lat = $(xmlPoints[i]).attr('lat');
+            var lon = $(xmlPoints[i]).attr('lon');
+            point = new Point(lat, lon);
+            track.addPoint(point);
+        }
+        // register tracks if there are some points
+        if (track.points.length > 0) {
+            gpx.addTrack(track);
+        }
+    }
+
+
     var readGpxFiles = function (file) {
         var reader,
             reader = new FileReader();
@@ -202,6 +231,15 @@ var DataController = (function () {
             if (!name) {
                 name = file.name;
             }
+            // do dat jeden prazdny gpx
+            gpx = new Gpx(data.gpxs.length + 1, name, file.name);
+            data.gpxs.push(gpx);
+
+            tracks = $(xmlData).find("trk");
+            for (var i = 0; i < tracks.length; i++) {
+                readTrack(tracks[i], gpx);
+            }
+
         };
     };
 
@@ -225,6 +263,7 @@ var DataController = (function () {
                     // 5. read GPX files as XML
                     for (var i = 0; i < gpxFiles.length; i++) {
                         readGpxFiles(files[i]);
+                        console.log(data);
                     }
                 } else {
                     alert("Sorry! Your browser does not support HTML5!");
