@@ -11,6 +11,7 @@ var MapController = (function () {
         DEFAULT_LONGITUDE: 14.441196,
         DEFAULT_ZOOM: 15,
         DEFAULT_MAP_TYPES: 'terrain',
+        MIN_TRACK_POINT_DELTA: 0.0001,
 
     }
 
@@ -24,6 +25,48 @@ vycentrovat mapu
 */
     var centerMap = function () {
         map.setCenter(new google.maps.LatLng(parseFloat(currentLatitude), parseFloat(currentLongitude)));
+    };
+
+    var showTrack = function (track, data) {
+        var pointarray = [];
+        // process first point
+        var lastlat = parseFloat(track.points[0].lat);
+        var lastlon = parseFloat(track.points[0].long);
+        var latlng = new google.maps.LatLng(lastlat, lastlon);
+        pointarray.push(latlng);
+        for (var i = 1; i < track.points.length; i++) {
+            var lat = parseFloat(track.points[i].lat);
+            var lon = parseFloat(track.points[i].long);
+            // Verify that this is far enough away from the last point to be used.
+            var latdiff = lat - lastlat;
+            var londiff = lon - lastlon;
+            if (Math.sqrt(latdiff * latdiff + londiff * londiff) >
+                MapConstants.MIN_TRACK_POINT_DELTA) {
+                lastlon = lon;
+                lastlat = lat;
+                latlng = new google.maps.LatLng(lat, lon);
+                pointarray.push(latlng);
+            }
+        }
+
+        var path = new google.maps.Polyline({
+            path: pointarray,
+            geodesic: true,
+            strokeColor: MapConstants.STROKE_COLOR_DEFAULT,
+            strokeOpacity: 1.0,
+            strokeWeight: 2
+        });
+        path.setMap(map);
+        track.latlngArray = pointarray;
+        track.polyline = path;
+        // click track on the map - color all tracks as default
+        // and color clicked track as selected
+        google.maps.event.addListener(track.polyline, 'click', function () {
+            unselectTracks(data, MapConstants.STROKE_COLOR_DEFAULT);
+            track.polyline.setMap(null);
+            track.polyline.setMap(map);
+            showElevation(track);
+        });
     };
 
     // zjistit aktuální pozici
@@ -79,7 +122,20 @@ vycentrovat mapu
             };
             map = new google.maps.Map(mapElement, mapOptions);
 
-        }
+        },
+
+        showOnMap: function (tracks, data) {
+            //centerAndZoomMap(data);
+            for (var i = 0; i < tracks.length; i++) {
+                showTrack(tracks[i], data);
+            }
+            if (data.gpxs.length > 0 && data.gpxs[0].tracks.length > 0) {
+                //showElevation(data.gpxs[0].tracks[0]);
+            }
+            console.log("hotovo");
+        },
+
+
     }
 
 })();
@@ -219,7 +275,7 @@ var DataController = (function () {
     }
 
 
-    var readGpxFiles = function (file) {
+    var readGpxFiles = function (file, callBackShowOnMap) {
         var reader,
             reader = new FileReader();
         reader.readAsText(file);
@@ -235,10 +291,11 @@ var DataController = (function () {
             gpx = new Gpx(data.gpxs.length + 1, name, file.name);
             data.gpxs.push(gpx);
 
-            tracks = $(xmlData).find("trk");
-            for (var i = 0; i < tracks.length; i++) {
-                readTrack(tracks[i], gpx);
+            tracksXml = $(xmlData).find("trk");
+            for (var i = 0; i < tracksXml.length; i++) {
+                readTrack(tracksXml[i], gpx);
             }
+            callBackShowOnMap(gpx.tracks, data);
 
         };
     };
@@ -251,7 +308,7 @@ var DataController = (function () {
 
 
 
-        parseFiles: function (files) {
+        parseFiles: function (files, callBackShowOnMap) {
             var gpxFiles;
             // 1. filter only gpx files 
             gpxFiles = filterGpxFiles(files);
@@ -262,7 +319,7 @@ var DataController = (function () {
                 if (typeof (FileReader) != "undefined") {
                     // 5. read GPX files as XML
                     for (var i = 0; i < gpxFiles.length; i++) {
-                        readGpxFiles(files[i]);
+                        readGpxFiles(files[i], callBackShowOnMap);
                         console.log(data);
                     }
                 } else {
@@ -292,10 +349,18 @@ var MainController = (function (mapCtrl, UICtrl, dataCtrl) {
 
     var buttonFilesClick = function (evt) {
         var selectedFiles = UICtrl.selectFiles(evt);
-        if (dataCtrl.parseFiles(files) === 0) {
+        if (dataCtrl.parseFiles(files, showOnMap) === 0) {
             UICtrl.showDragError('No gpx file selected...');
         }
     }
+
+    var showOnMap = function (tracks, data) {
+        if (tracks.length > 0) {
+            mapCtrl.showOnMap(tracks, data);
+        } else {
+            UICtrl.showDragError("No track found in gpx...");
+        }
+    };
 
     /*
     --------------------- Return part ---------------------
