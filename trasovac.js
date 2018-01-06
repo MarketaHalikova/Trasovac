@@ -100,6 +100,29 @@ vycentrovat mapu
         }
     };
 
+    var centerAndZoomMap = function (data) {
+
+        var minlat = data.minLatitude;
+        var maxlat = data.maxLatitude;
+        var minlon = data.minLongitude;
+        var maxlon = data.maxLongitude;
+
+        if ((minlat === -1) && (maxlat == -1)) {
+            centerMap();
+            return;
+        }
+
+        // Center around the middle of the points
+        var centerlon = (maxlon + minlon) / 2;
+        var centerlat = (maxlat + minlat) / 2;
+        //zoom
+        var bounds = new google.maps.LatLngBounds(
+            new google.maps.LatLng(minlat, minlon),
+            new google.maps.LatLng(maxlat, maxlon));
+        map.setCenter(new google.maps.LatLng(centerlat, centerlon));
+        map.fitBounds(bounds);
+    };
+
     /*
     --------------------- Return part ---------------------
     */
@@ -125,7 +148,7 @@ vycentrovat mapu
         },
 
         showOnMap: function (tracks, data) {
-            //centerAndZoomMap(data);
+            centerAndZoomMap(data);
             for (var i = 0; i < tracks.length; i++) {
                 showTrack(tracks[i], data);
             }
@@ -191,6 +214,10 @@ var DataController = (function () {
 
     var data = {
         gpxs: [],
+        minLatitude: -1,
+        maxLatitude: -1,
+        minLongitude: -1,
+        maxLongitude: -1,
     }
 
     // Gpx file can contain more tracks 
@@ -227,6 +254,41 @@ var DataController = (function () {
     Track.prototype.addPoint = function (point) {
         this.points.push(point);
     };
+
+
+    var calculateBounds = function () {
+        var track, gpx;
+        var minlat = 999999999;
+        var maxlat = -99999999999;
+        var minlon = 999999999;
+        var maxlon = -99999999999;
+        if (data.gpxs.length == 0) {
+            data.minLatitude = -1;
+            data.maxLatitude = -1;
+            data.minLongitude = -1;
+            data.maxLongitude = -1;
+            return;
+        }
+
+        for (var i = 0; i < data.gpxs.length; i++) {
+            gpx = data.gpxs[i];
+            for (var j = 0; j < gpx.tracks.length; j++) {
+                track = gpx.tracks[j];
+                for (var k = 1; k < track.points.length; k++) {
+                    var lat = parseFloat(track.points[k].lat);
+                    var lon = parseFloat(track.points[k].long);
+                    if (lon < minlon) minlon = lon;
+                    if (lon > maxlon) maxlon = lon;
+                    if (lat < minlat) minlat = lat;
+                    if (lat > maxlat) maxlat = lat;
+                }
+            }
+        }
+        data.minLatitude = minlat;
+        data.maxLatitude = maxlat;
+        data.minLongitude = minlon;
+        data.maxLongitude = maxlon;
+    }
 
     var getTrackCount = function () {
         var counter = 0;
@@ -295,6 +357,14 @@ var DataController = (function () {
             for (var i = 0; i < tracksXml.length; i++) {
                 readTrack(tracksXml[i], gpx);
             }
+
+            if (tracksXml.length > 0) {
+                // after the reading odf file is done the callback
+                // function is called
+                calculateBounds();
+
+            }
+
             callBackShowOnMap(gpx.tracks, data);
 
         };
