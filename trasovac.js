@@ -216,6 +216,8 @@ vycentrovat mapu
         map.fitBounds(bounds);
     };
 
+
+
     /*
     --------------------- Return part ---------------------
     */
@@ -240,7 +242,7 @@ vycentrovat mapu
                 mapTypeId: MapConstants.DEFAULT_MAP_TYPES,
             };
             map = new google.maps.Map(mapElement, mapOptions);
-
+            document.getElementById('chart_div').addEventListener("mouseout", clearMouseMarker);
         },
 
         showOnMap: function (tracks, data) {
@@ -252,6 +254,18 @@ vycentrovat mapu
                 showElevation(data.gpxs[0].tracks[0]);
             }
         },
+
+        clearMap: function (data) {
+            for (var i = 0; i < data.gpxs.length; i++) {
+                for (var j = 0; j < data.gpxs[i].tracks.length; j++) {
+                    data.gpxs[i].tracks[j].polyline.setMap(null);
+                }
+            }
+            document.getElementById("divDistance").style.display = 'none';
+            document.getElementById('chart_div').style.display = 'none';
+            data.gpxs = [];
+        }
+
 
 
     }
@@ -475,7 +489,9 @@ var DataController = (function () {
     */
     return {
 
-
+        getData: function () {
+            return data;
+        },
 
 
         parseFiles: function (files, callBackShowOnMap) {
@@ -514,7 +530,15 @@ var MainController = (function (mapCtrl, UICtrl, dataCtrl) {
     var setupEventListeners = function () {
 
         document.getElementById("gpxFile").addEventListener("change", buttonFilesClick, false);
+        document.getElementById('clear').addEventListener("click", clearTracks, false);
 
+    };
+
+    /*
+   handle  click clear tracks 
+    */
+    var clearTracks = function (evt) {
+        mapCtrl.clearMap(dataCtrl.getData());
     };
 
     var buttonFilesClick = function (evt) {
