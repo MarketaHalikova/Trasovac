@@ -120,6 +120,17 @@ vycentrovat mapu
         map.setCenter(new google.maps.LatLng(parseFloat(currentLatitude), parseFloat(currentLongitude)));
     };
 
+    var unselectTracks = function (data, color) {
+        for (var i = 0; i < data.gpxs.length; i++) {
+            for (var j = 0; j < data.gpxs[i].tracks.length; j++) {
+                data.gpxs[i].tracks[j].polyline.setOptions({
+                    strokeColor: color,
+                });
+                data.gpxs[i].tracks[j].isPloted = false;
+            }
+        }
+    }
+
     var showTrack = function (track, data) {
         var pointarray = [];
         // process first point
