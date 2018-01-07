@@ -293,6 +293,27 @@ var UIController = (function () {
 
 
     /*
+    Read dropped files
+    */
+    var readFiles = function (evt) {
+        dataTransfer = evt.dataTransfer;
+        files = []
+        if (dataTransfer.items) {
+            // Use DataTransferItemList interface to access the file(s)
+            for (var i = 0; i < dataTransfer.items.length; i++) {
+                if (dataTransfer.items[i].kind == "file") {
+                    files.push(dataTransfer.items[i].getAsFile());
+                }
+            }
+        } else {
+            // Use DataTransfer interface to access the file(s)
+            for (var i = 0; i < dataTransfer.files.length; i++) {
+                files.push(dataTransfer.files[i]);
+            }
+        }
+        return files;
+    };
+    /*
     --------------------- Return part ---------------------
     */
     return {
@@ -321,9 +342,43 @@ var UIController = (function () {
         init: function () {
             document.getElementById("divDistance").style.display = 'none';
             document.getElementById("chart_div").style.display = 'none';
-        }
+        },
 
+
+        handleDragOver: function (evt) {
+            // event is for old browsers
+            evt = evt || event
+            // show copy icon only for the drop zone
+            if (evt.target.id != 'drop_zone') {
+                // not the drop zone
+                evt.preventDefault();
+                evt.dataTransfer.effectAllowed = "none";
+                evt.dataTransfer.dropEffect = "none";
+            } else {
+                // is drop zone
+                evt.stopPropagation(); // aby se neposílaly eventy vyse
+                evt.preventDefault();
+                evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
+            }
+        },
+
+        /* read dropped files */
+        dropFiles: function (evt) {
+            var files, dataTransfer;
+
+            evt = evt || event
+            evt.stopPropagation();
+            evt.preventDefault();
+            // accept drop only for drop zone 
+            if (evt.target.id != 'drop_zone') {
+                return;
+            }
+            // read dropped files
+            return readFiles(evt);
+        },
     }
+
+
 
 
 
@@ -517,7 +572,6 @@ var DataController = (function () {
                     // 5. read GPX files as XML
                     for (var i = 0; i < gpxFiles.length; i++) {
                         readGpxFiles(files[i], callBackShowOnMap);
-                        console.log(data);
                     }
                 } else {
                     alert("Sorry! Your browser does not support HTML5!");
@@ -542,6 +596,8 @@ var MainController = (function (mapCtrl, UICtrl, dataCtrl) {
 
         document.getElementById("gpxFile").addEventListener("change", buttonFilesClick, false);
         document.getElementById('clear').addEventListener("click", clearTracks, false);
+        window.addEventListener("dragover", UICtrl.handleDragOver, false);
+        window.addEventListener("drop", handleDrop, false);
 
     };
 
@@ -565,6 +621,24 @@ var MainController = (function (mapCtrl, UICtrl, dataCtrl) {
         } else {
             UICtrl.showDragError("No track found in gpx...");
         }
+    };
+
+    /*
+    Handle drop event. 
+    */
+    var handleDrop = function (evt) {
+        var files;
+        // 1. read dropped files using UIController
+        files = UICtrl.dropFiles();
+        // 3. show error when there isn't a gpx file 
+        // Here is a problem.
+        // Reading of a file is asynchronous. I have to add a function 
+        // to show result as a call back function. It is showOnMap here
+        // it will be used after the file is parsed
+        if (dataCtrl.parseFiles(files, showOnMap) === 0) {
+            UICtrl.showDragError("No gpx file selected...");
+        }
+
     };
 
     /*
